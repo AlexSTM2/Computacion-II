@@ -1,5 +1,4 @@
 #Ejercicio de práctica de la calculadora
-from ssl import Options
 import sys, getopt
 
 arguments = sys.argv[1:]
