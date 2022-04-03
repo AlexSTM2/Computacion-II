@@ -1,5 +1,4 @@
 import argparse
-from msilib.schema import File
 args =  argparse.ArgumentParser(description="Archivos")
 args.add_argument("-i","--file", type=str, help="Archivo a buscar")
 args.add_argument("-o","--new_file", type=str, help="Archivo a sobreecribir")
