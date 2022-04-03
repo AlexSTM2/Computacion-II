@@ -23,7 +23,3 @@ def file_search(file, new_file):
             print("Su nuevo archivo llamdo", new_file, "tiene el siguiente contenido: \n",
             read_new_f)
 file_search(arguments.file, arguments.new_file)
-
-
-
-
