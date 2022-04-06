@@ -1,17 +1,33 @@
-import os,sys, argparse
-parser = argparse.ArgumentParser(description="Comandos")
-parser.add_argument("-n", "--num", type=int, help="Nùmero de procesos hijos")
-# parser.add_argument("-h", "--help", type=str, help="Ayuda")
-# parser.add_argument("-v", "--verb", type=str, help="Modo verboso")
-args = parser.parse_args()
-def forkeando(num):
-    for i in range(num):
-        ret = os.fork()
-    global pid, ppid
-    pid = os.getpid()
-    ppid = os.getppid()
-    print("PID: %d PPID: %d Retorno: %d" % (pid,ppid,ret))
+import os,sys, argparse, time
 
+parser = argparse.ArgumentParser(description="Estos son los comandos y sus descripciones")
+group = parser.add_mutually_exclusive_group()
+group_1 = parser.add_mutually_exclusive_group()
+parser.add_argument("-n", type=int, help="Nùmero de procesos hijos")
+group.add_argument("-v", action="store_true", help="Activa el modo verbose")
+group_1.add_argument("-a", action="store_true", help="Muestra la ayuda.")
+group = parser.parse_args()
+args = parser.parse_args()
+group1 = parser.parse_args()
+
+def forkeando(n):
+    if group1.a is True:
+        parser.print_help()
+    for i in range(n):
+        ret = os.fork()
+        global pid, ppid
+        pid = os.getpid()
+        ppid = os.getppid()
+        suma(pid)
+        print("PID: %d PPID: %d Retorno: %d" % (pid,ppid,ret))
+        if group.v is True and ret == 0:
+            print("Starting process", pid)
+            print("Ending process", pid)
+            os._exit(0)
+        elif ret == 0:
+            os._exit(0)
+    
+    os.wait()
 def suma(pid):
     suma = 0
     i = 2
@@ -21,6 +37,4 @@ def suma(pid):
         i += 1
     print("Suma:",suma)
 
-      
-forkeando(args.num)
-suma(pid)
+forkeando(args.n)
