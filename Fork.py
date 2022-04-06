@@ -15,19 +15,18 @@ def forkeando(n):
         parser.print_help()
     for i in range(n):
         ret = os.fork()
-        global pid, ppid
-        pid = os.getpid()
-        ppid = os.getppid()
-        suma(pid)
-        print("PID: %d PPID: %d Retorno: %d" % (pid,ppid,ret))
         if group.v is True and ret == 0:
-            print("Starting process", pid)
-            print("Ending process", pid)
+            print("Starting process", os.getpid())
+            time.sleep(1)
+            suma(os.getpid())
+            time.sleep(0.5)
+            print("Ending process", os.getpid())
             os._exit(0)
         elif ret == 0:
             os._exit(0)
-    
-    os.wait()
+    for i in range(n):
+        os.wait()
+        
 def suma(pid):
     suma = 0
     i = 2
@@ -35,6 +34,6 @@ def suma(pid):
         if i % 2 == 0:
             suma += i
         i += 1
-    print("Suma:",suma)
+    print("PID:", pid, "Suma:",suma)
 
 forkeando(args.n)
