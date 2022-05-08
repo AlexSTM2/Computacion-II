@@ -5,7 +5,7 @@
 #en una qeue.
 #El primer hijo debe leer la cola de msj y mostrar el contenido.
 
-import os, sys, time
+import os, sys, time, codecs
 import multiprocessing as mp
 
 
@@ -13,27 +13,34 @@ def child1_w(pipe_s, q, stdin):
     #Ingreso por la stdin al hijo 1
     sys.stdin = os.fdopen(stdin)
     for input in sys.stdin:
-        if input[:5] == "break":
-            
+        if input[:3] == "bye":
+            pipe_s.send("bye")
+            pipe_s.close()
             break
+  
         else:
             pipe_s.send(input)
-            print("Primer hijo escribiendo...", input)
-            print("Hijo leyendo la cola:")
+            print("Primer hijo leyendo la cola:")
             time.sleep(0.3)
             print(q.get())
 
 def child2_r(pipe_r, q):
     #Arreglar esto, al poner el break, se me quede esperando el recv
+    cond = True
     while cond == True:
         time.sleep(1)
-        print("Hijo leyendo: ")
+        print("Segundo hijo leyendo el pipe:")
         msg = str(pipe_r.recv())
-        q.put(msg)
+        if msg == "bye":
+            cond = False
+            print("Hijos saliendo...")
+        else:
+            q.put(codecs.encode(msg,'rot_13'))
+    
+    pipe_r.close()
 
 if __name__ == "__main__":
-    global cond
-    cond = True
+
     fd = sys.stdin.fileno()
     #Creo el pipe en el padre y la queue
     pipe_s, pipe_r = mp.Pipe()
@@ -44,4 +51,4 @@ if __name__ == "__main__":
     proc2.start()
     proc1.join()
     proc2.join()
-    print("Saliendo")
+    print("Saliendo...")
