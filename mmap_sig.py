@@ -14,7 +14,6 @@ def Forkeando(args):
     global mapeo
     mapeo = mmap.mmap(-1,1024)
     print("Padre esperando señales...")
-    #Primer hijo
     for i in range(2):
         ret = os.fork()
         if ret == 0:
