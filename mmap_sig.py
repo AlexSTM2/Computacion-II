@@ -41,6 +41,7 @@ def Forkeando(args):
     signal.signal(signal.SIGUSR2, handler_padre)
     signal.pause()
     os.wait()
+
 def handler_padre(s,f):
     if s == signal.SIGUSR1:
         lectura = mapeo.readline()

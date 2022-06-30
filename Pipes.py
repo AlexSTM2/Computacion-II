@@ -10,40 +10,39 @@ def Main():
 
 
 def Pipes(args):
-    r1, w1 = os.pipe()
-    r2, w2 = os.pipe()
-    fd1 = open(args.f, "r")
+    
+    fd1 = open(args.f, "r+")
     for i in fd1.readlines():
-        
+        r1, w1 = os.pipe()
+        r2, w2 = os.pipe()
         ret = os.fork()
-        if ret == 0:
-            os.close(w1)
-            r1 = os.fdopen(r1, 'r')
-            print("Hijo leyendo...", os.getpid())
-            texto = r1.readline()
-            r1.close()
-            w2 = os.fdopen(w2, 'w')
+        if not ret:
+            time.sleep(0.5)
+            r1_h = os.fdopen(r1, 'r')
+            texto = r1_h.readline()
+            r1_h.close()
+            os.close(r2)
+            w2_h = os.fdopen(w2, 'w')
+            texto = texto.rstrip("\n")
             texto = texto[::-1]
-            w2.write(texto)
+            w2_h.write(texto)
+            w2_h.close()
             os._exit(0)
         else:
             os.close(r1)
-            w1 = os.fdopen(w1, 'w')
-            w1.write(i)
-            w1.close()
+            w1_p = os.fdopen(w1, 'w')
+            w1_p.write(i)
+            w1_p.close()
             #Padre lee
             time.sleep(1)
             os.close(w2)
-            r2 = os.fdopen(r2, 'r')
-            p_lectura = r2.readline()
+            r2_p = os.fdopen(r2, 'r')
+            p_lectura = r2_p.readline()
             print(p_lectura)
-            r2.close()
-            os.wait()
-            sys.exit(0)
+            r2_p.close()
 
-    # for g in fd1.readline():
-    #     print(g)
-    #     os.wait()
+    for g in fd1.readline():
+        os.wait()
     fd1.close()
 
 def path_search(args):
