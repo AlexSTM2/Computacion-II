@@ -1,12 +1,13 @@
 import click, subprocess, signal
 import threading as th
 import socketserver as ss
+import multiprocessing as mp
 @click.command()
 @click.option('--c', type=str, help='We use threading to add concurrency.', prompt="T for threading server/P for a fork server")
 @click.option('--p', help="Server port", type=int, prompt="Server port")
 def main(c,p):
     HOST, PORT = "localhost", p
-    ss.TCPServer.allow_reuse_address = True
+    
     if c[0].lower() == "t":
         print("Thread")
         server_thread = th.Thread(target=threading_service(HOST, PORT))
@@ -15,7 +16,9 @@ def main(c,p):
 
     elif c[0].lower() == "p":
         print("Fork")
-        fork_service(h=HOST, p=PORT)
+        proc = mp.Process(target=fork_service(HOST,PORT))
+        proc.daemon = True
+        proc.start()
 
     else:
         print("Please enter a valid tipe of server concurrency...")
@@ -29,18 +32,33 @@ def threading_service(h, p):
         except:
             server.shutdown()
 
-def fork_service(p, h):
-    pass
+def fork_service(h, p):
+    with ForkedTCPServer((h,p), MyTCPHandler) as server:
+        server.serve_forever()
+        try:
+            signal.pause()
+        except:
+            server.shutdown()
+
+# def sub_proc_command(com):
+#     shell_com = subprocess.Popen([com], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+#     out, err = shell_com.communicate()
+#     return out, err
+#Tengo que mandar esto en un cliente, porque no lo puedo hacer desde el mismo servidor
 
 class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
+    pass
+class ForkedTCPServer(ss.ForkingMixIn, ss.TCPServer):
     pass
 
 class MyTCPHandler(ss.BaseRequestHandler):
     
     def handle(self):
-        self.data = self.request.recv(1024)
-        print(self.data.decode().strip() + " recibido")
-        self.request.sendall(self.data)
-        
+        while True:
+            self.data = self.request.recv(1024)
+            # print(self.data.decode("ascii").strip() + " recibido")
+            self.request.sendall(self.data)
+
 if __name__ == "__main__":
+    ss.TCPServer.allow_reuse_address = True
     main()
