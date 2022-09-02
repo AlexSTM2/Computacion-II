@@ -40,11 +40,10 @@ def fork_service(h, p):
         except:
             server.shutdown()
 
-# def sub_proc_command(com):
-#     shell_com = subprocess.Popen([com], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-#     out, err = shell_com.communicate()
-#     return out, err
-#Tengo que mandar esto en un cliente, porque no lo puedo hacer desde el mismo servidor
+def sub_proc_command(com):
+    shell_com = subprocess.Popen([com], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    out, err = shell_com.communicate()
+    return out, err
 
 class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
     pass
@@ -56,8 +55,18 @@ class MyTCPHandler(ss.BaseRequestHandler):
     def handle(self):
         while True:
             self.data = self.request.recv(1024)
-            # print(self.data.decode("ascii").strip() + " recibido")
-            self.request.sendall(self.data)
+            com = self.data.decode()
+            out, err = sub_proc_command(com)
+            if len(out) != 0:
+                out = out.decode()
+                print("\nOK\n" + out)
+                data = "\nOK\n" + out
+                self.request.sendall(data.encode())
+            else:
+                err = err.decode()
+                print("\nERROR\n" + err)
+                data = "\nERROR\n" + err
+                self.request.sendall(data.encode())
 
 if __name__ == "__main__":
     ss.TCPServer.allow_reuse_address = True
