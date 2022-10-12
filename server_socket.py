@@ -1,44 +1,46 @@
+import socket
 import click, subprocess, signal
 import threading as th
 import socketserver as ss
 import multiprocessing as mp
+
 @click.command()
-@click.option('--c', type=str, help='We use threading to add concurrency.', prompt="T for threading server/P for a fork server")
+@click.option('--c', type=str, help='We can use both threading and multiprocessing modes.', prompt="T for threading server/P for a fork server")
 @click.option('--p', help="Server port", type=int, prompt="Server port")
 def main(c,p):
+    global HOST, PORT
     HOST, PORT = "localhost", p
-    
-    if c[0].lower() == "t":
-        print("Thread")
-        server_thread = th.Thread(target=threading_service(HOST, PORT))
-        server_thread.daemon = True
-        server_thread.start()
+    directions = socket.getaddrinfo("localhost", p, socket.AF_UNSPEC, socket.SOCK_STREAM)
+    threads = []
+    for direction in directions:
+        threads.append(th.Thread(target=service, args=(direction,c)))
+    for h in threads:
+        h.start()
+    for h in threads:
+        h.join()
 
-    elif c[0].lower() == "p":
-        print("Fork")
-        proc = mp.Process(target=fork_service(HOST,PORT))
-        proc.daemon = True
-        proc.start()
+def service(direction, c):
 
+    if direction[0] == socket.AF_INET and c.lower() == "t":
+        print("IPv4")
+        server = ThreadedTCPServer((HOST, PORT), MyTCPHandler)
+    elif direction[0] == socket.AF_INET and c.lower() == "p":
+        print("IPv4")
+        server = ForkedTCPServer((HOST, PORT), MyTCPHandler)
+    elif direction[0] == socket.AF_INET6 and c.lower() == "t":
+        print("IPv6")
+        server = ThreadedTCPServer6((HOST, PORT), MyTCPHandler)
+    elif direction[0] == socket.AF_INET6 and c.lower() == "p":
+        print("IPv6")
+        server = ForkedTCPServer6((HOST, PORT), MyTCPHandler)
     else:
-        print("Please enter a valid tipe of server concurrency...")
+        print("Invalid parameter")
 
-def threading_service(h, p):
-    with ThreadedTCPServer((h, p), MyTCPHandler) as server:
-        
-        server.serve_forever()
-        try:
-            signal.pause()
-        except:
-            server.shutdown()
-
-def fork_service(h, p):
-    with ForkedTCPServer((h,p), MyTCPHandler) as server:
-        server.serve_forever()
-        try:
-            signal.pause()
-        except:
-            server.shutdown()
+    server.serve_forever()
+    try:
+        signal.pause()
+    except:
+        server.shutdown()
 
 def sub_proc_command(com):
     shell_com = subprocess.Popen([com], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -47,7 +49,16 @@ def sub_proc_command(com):
 
 class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
     pass
+
 class ForkedTCPServer(ss.ForkingMixIn, ss.TCPServer):
+    pass
+
+class ThreadedTCPServer6(ss.ThreadingMixIn, ss.TCPServer):
+    address_family = socket.AF_INET6
+    pass
+
+class ForkedTCPServer6(ss.ForkingMixIn, ss.TCPServer):
+    address_family = socket.AF_INET6
     pass
 
 class MyTCPHandler(ss.BaseRequestHandler):
