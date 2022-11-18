@@ -1,0 +1,3 @@
+
+Datetime Fri Nov 18 01:25:47 2022: Command ls executed correctly.
+Datetime Fri Nov 18 01:26:37 2022: Command pruebas executed with errors.
