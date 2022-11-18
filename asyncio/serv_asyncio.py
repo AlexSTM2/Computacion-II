@@ -32,8 +32,8 @@ async def sub_proc_command(com):
 
 async def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-hs', type=str, help="Direccion del Host.")
-    parser.add_argument('-p', type=int, help="Puerto que el va a usar para iniciar el sv")
+    parser.add_argument('-hs',default="localhost",type=str, help="Direccion del Host.")
+    parser.add_argument('-p',default=1234,type=int, help="Puerto que el va a usar para iniciar el sv")
     args = parser.parse_args()
     server = await asyncio.start_server(serv_async, args.hs , args.p, reuse_address=True)
     await server.serve_forever()
