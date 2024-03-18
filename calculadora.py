@@ -5,18 +5,20 @@ arguments = sys.argv[1:]
 
 def calc(op):
     result = ""
-    options = "o:n:m:"  
-    (opt, arg) = getopt.getopt(op, options) 
-    for (opt, ar) in opt:
+    options = "o:n:m:"
+    print("Argumentos:", op)  
+    (opts, ar) = getopt.getopt(op, options)
+    print(opts)
+    for opt, arg in opts:
         if opt == "-o":
-            print("Operación a realizar:", ar)
-            op_math = ar
+            print("Operación a realizar:", arg)
+            op_math = arg
         elif opt == "-n":
-            print("Primer número:", ar)
-            f_num = (ar)
+            print("Primer número:", arg)
+            f_num = (arg)
         else:
-            print("Segundo número:", ar)
-            s_num = (ar)
+            print("Segundo número:", arg)
+            s_num = (arg)
     if f_num.isnumeric() and s_num.isnumeric():
         print("Números ingresados correctamente")
         if op_math == "+":
